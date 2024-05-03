@@ -30,13 +30,6 @@ function erase() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-function saveImage() {
-    var dataURL = canvas.toDataURL('image/png');
-    var image = new Image();
-    image.src = dataURL;
-    document.body.appendChild(image);
-}
-
 async function classifyImage() {
     if (!model) {
         console.error('Model is not loaded.');
@@ -113,9 +106,6 @@ async function init() {
     
     clearButton = document.getElementById('cb');
     clearButton.addEventListener("click", erase);
-
-    saveImageButton = document.getElementById('saveImageBtn');
-    saveImageButton.addEventListener("click", saveImage);
 
     classifyButton = document.getElementById('classifyBtn');
     classifyButton.addEventListener("click", classifyImage);
