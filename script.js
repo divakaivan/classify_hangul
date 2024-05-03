@@ -62,14 +62,10 @@ async function preprocessImage() {
     return new Promise((resolve, reject) => {   
         image.onload = function() {
             var tensor = tf.browser.fromPixels(image)
-                .resizeNearestNeighbor([128, 128]) // Resize to match model's input shape
+                .resizeNearestNeighbor([64, 64]) // Resize to match model's input shape
+                .mean(2) // Convert to grayscale
+                .expandDims(3) // Add channel dimension
                 .toFloat();
-            
-            // Ensure that the image has 3 color channels (RGB)
-            if (tensor.shape[2] === 4) { // Check if image has alpha channel
-                tensor = tensor.slice([0, 0, 0], [128, 128, 3]); // Remove alpha channel
-            }
-            tensor = tensor.expandDims(0); // Add batch dimension
             
             console.log('Preprocessed image shape:', tensor.shape); // Log the shape
             
@@ -81,8 +77,6 @@ async function preprocessImage() {
         };
     });
 }
-
-
 
 async function loadModel() {
     try {
