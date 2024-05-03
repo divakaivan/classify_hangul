@@ -1,3 +1,9 @@
+var labels = ['a', 'ae', 'b', 'bb', 'ch', 'd', 
+                'e', 'eo', 'eu', 'g', 'gg', 'h', 
+                'i', 'j', 'k', 'm', 'n', 'ng', 'o', 
+                'p', 'r', 's', 'ss', 't', 'u', 'ya', 
+                'yae', 'ye', 'yo', 'yu'];
+
 var canvas, ctx, clearButton, saveImageButton, classifyButton;
 var pos = {x:0, y:0};
 var model;
@@ -28,41 +34,75 @@ function saveImage() {
     var dataURL = canvas.toDataURL('image/png');
     var image = new Image();
     image.src = dataURL;
-    // document.body.appendChild(image);
-    console.log(image.shape)
+    document.body.appendChild(image);
 }
 
 async function classifyImage() {
-    // Preprocess the drawn image
-    var inputTensor = preprocessImage();
-    console.log('Preprocessed image shape:', inputTensor.shape)
-    // Make predictions using the loaded model
-    var prediction = await model.predict(inputTensor).data();
-    console.log('Prediction:', prediction);
+    if (!model) {
+        console.error('Model is not loaded.');
+        return;
+    }
+
+    try {
+        // Preprocess the drawn image
+        var inputTensor = await preprocessImage();
+        // Make predictions using the loaded model
+        var prediction = await model.predict(inputTensor).data();
+        console.log('Prediction:', prediction);
+
+        let maxIndex = prediction.indexOf(Math.max(...prediction));
+
+        // Get the corresponding label
+        let predictedLabel = labels[maxIndex];
+
+        console.log(predictedLabel);
+    } catch (error) {
+        console.error('Error during classification:', error);
+    }
 }
 
-function preprocessImage() {
+async function preprocessImage() {
     var dataURL = canvas.toDataURL('image/png');
     var image = new Image();
     image.src = dataURL;
-    var tensor = tf.browser.fromPixels(image)
-        .resizeNearestNeighbor([128, 128]) // Resize to match model's input shape
-        .toFloat();
-    // Ensure that the image has 3 color channels (RGB)
-    if (tensor.shape[2] === 4) { // Check if image has alpha channel
-        tensor = tensor.slice([0, 0, 0], [128, 128, 3]); // Remove alpha channel
-    }
-    tensor = tensor.expandDims(0); // Add batch dimension
-    return tensor.div(255.0); // Normalize pixel values
+
+    return new Promise((resolve, reject) => {   
+        image.onload = function() {
+            var tensor = tf.browser.fromPixels(image)
+                .resizeNearestNeighbor([128, 128]) // Resize to match model's input shape
+                .toFloat();
+            
+            // Ensure that the image has 3 color channels (RGB)
+            if (tensor.shape[2] === 4) { // Check if image has alpha channel
+                tensor = tensor.slice([0, 0, 0], [128, 128, 3]); // Remove alpha channel
+            }
+            tensor = tensor.expandDims(0); // Add batch dimension
+            
+            console.log('Preprocessed image shape:', tensor.shape); // Log the shape
+            
+            resolve(tensor.div(255.0)); // Normalize pixel values
+        };
+
+        image.onerror = function() {
+            reject(new Error('Failed to load image'));
+        };
+    });
 }
 
+
+
 async function loadModel() {
-    model = await tf.loadLayersModel('hangul_model.json');
-    // console.log('Model loaded successfully');
-    console.log(model.summary())
+    try {
+        model = await tf.loadLayersModel('hangul_model.json');
+        console.log('Model loaded successfully');
+        console.log(model.summary());
+    } catch (error) {
+        console.error('Error loading model:', error);
+    }
 }
+
     
-function init() {
+async function init() {
     canvas = document.getElementById('canvas');
     ctx = canvas.getContext("2d");
     ctx.fillStyle = "white";
@@ -80,5 +120,9 @@ function init() {
     classifyButton = document.getElementById('classifyBtn');
     classifyButton.addEventListener("click", classifyImage);
 
-    loadModel();
+    try {
+        await loadModel(); // Wait for the model to load before proceeding
+    } catch (error) {
+        console.error('Error loading model:', error);
+    }
 }
