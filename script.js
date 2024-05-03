@@ -54,7 +54,7 @@ async function classifyImage() {
 
         // Get the corresponding label
         let predictedLabel = labels[maxIndex];
-
+        document.getElementById('prediction').textContent = 'Predicted label: ' + predictedLabel;
         console.log(predictedLabel);
     } catch (error) {
         console.error('Error during classification:', error);
