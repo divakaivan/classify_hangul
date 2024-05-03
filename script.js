@@ -86,7 +86,7 @@ async function preprocessImage() {
 
 async function loadModel() {
     try {
-        model = await tf.loadLayersModel('hangul_model.json');
+        model = await tf.loadLayersModel('hangul_model1.json');
         console.log('Model loaded successfully');
         console.log(model.summary());
     } catch (error) {
