@@ -63,8 +63,8 @@ async function preprocessImage() {
         image.onload = function() {
             var tensor = tf.browser.fromPixels(image)
                 .resizeNearestNeighbor([64, 64]) // Resize to match model's input shape
-                .mean(2) // Convert to grayscale
-                .expandDims(3) // Add channel dimension
+                .mean() // Convert to grayscale
+                .expandDims(2) // Add channel dimension
                 .toFloat();
             
             console.log('Preprocessed image shape:', tensor.shape); // Log the shape
@@ -77,6 +77,7 @@ async function preprocessImage() {
         };
     });
 }
+
 
 async function loadModel() {
     try {
