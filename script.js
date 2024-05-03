@@ -64,6 +64,7 @@ async function preprocessImage() {
             var tensor = tf.browser.fromPixels(image)
                 .resizeNearestNeighbor([64, 64]) // Resize to match model's input shape
                 .mean(2)
+                .expandDims(-1)
                 .toFloat();
             
             // Ensure that the image has 3 color channels (RGB)
