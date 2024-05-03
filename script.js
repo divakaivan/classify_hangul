@@ -64,7 +64,7 @@ async function preprocessImage() {
             var tensor = tf.browser.fromPixels(image)
                 .resizeNearestNeighbor([64, 64]) // Resize to match model's input shape
                 .toFloat();
-            tensor = tf.image.grayscale(tensor);
+            tensor = tf.image.rgb_to_grayscale(tensor);
             // Ensure that the image has 3 color channels (RGB)
             // if (tensor.shape[2] === 4) { // Check if image has alpha channel
             //     tensor = tensor.slice([0, 0, 0], [64, 64, 1]); // Remove alpha channel
